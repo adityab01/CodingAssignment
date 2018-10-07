@@ -1,0 +1,7 @@
+com\fxcalc\FxcalculatorStarter.class
+com\fxcalc\model\ConversionRequest.class
+com\fxcalc\helper\ReferenceDataLoader.class
+com\fxcalc\service\impl\CurrencyConversionServiceImpl.class
+com\fxcalc\service\impl\InputValidationServiceImpl.class
+com\fxcalc\service\CurrencyConversionService.class
+com\fxcalc\service\InputValidationService.class
