@@ -31,12 +31,9 @@ public class CurrencyConversionServiceImpl implements CurrencyConversionService 
 	@Override
 	public void processRequest(ConversionRequest convRequest) {
 
-		crossMatrix = new HashMap<String, HashMap<String, String>>();
-		currencyRates = new HashMap<String, String>();
-		formatterMap = new HashMap<String, String>();
-		referenceDataLoader.populateCurrencyRate(currencyRates);
-		referenceDataLoader.populateCrossViaMatrix(crossMatrix);
-		referenceDataLoader.getFormatterMap(formatterMap);
+		crossMatrix = referenceDataLoader.populateCrossViaMatrix();
+		currencyRates=referenceDataLoader.populateCurrencyRate();
+		formatterMap=referenceDataLoader.getFormatterMap();
 		lookupCrossMatrix(crossMatrix, convRequest);
 	}
 
@@ -73,7 +70,7 @@ public class CurrencyConversionServiceImpl implements CurrencyConversionService 
 				Double rate = 1 / Double.parseDouble(strRate);
 				convertedAmount = String.format("%."+formatterMap.get(convRequest.getToCurrency())+"f %n",
 						rate * convRequest.getAmount());
-				//System.out.println("\n Conversion Result: " + rate * convRequest.getAmount());
+				System.out.println("\n Conversion Result: " + convertedAmount);
 			
 			//If Currency
 			} else {

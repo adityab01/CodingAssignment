@@ -7,7 +7,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
+import static org.mockito.Mockito.*;
+import org.mockito.*;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -64,12 +65,16 @@ public class CurrencyConversionServiceImplTest {
 	
 	@Test
 	public void testprocessRequest() {
-//		mockreferenceDataLoader.populateCurrencyRate(mockcurrencyRates);
-//		mockreferenceDataLoader.populateCrossViaMatrix(mockcrossMatrix);
-//		mockreferenceDataLoader.getFormatterMap(mockformatterMap);
-//		mockCurrencyConversionServiceImpl.lookupCrossMatrix(mockcrossMatrix, mockconvRequest);
+
+		Mockito.doReturn(mockcrossMatrix).when(mockreferenceDataLoader).populateCrossViaMatrix();
+
+		Mockito.doReturn(mockformatterMap).when(mockreferenceDataLoader).getFormatterMap();
+
+		Mockito.doReturn(mockcurrencyRates).when(mockreferenceDataLoader).populateCurrencyRate();
+		mockCurrencyConversionServiceImpl.processRequest(mockconvRequest);
+		
 	}
-	
+
 }
 	
 	

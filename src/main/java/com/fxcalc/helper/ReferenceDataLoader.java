@@ -30,7 +30,8 @@ public class ReferenceDataLoader {
 	 * @param currencyRate
 	 */
 	
-	public void populateCurrencyRate(HashMap<String, String> currencyRate) {
+	public HashMap<String, String> populateCurrencyRate() {
+		HashMap<String, String> currencyRate = new HashMap<String, String>();
 		try {
 			File file = ResourceUtils.getFile("classpath:" + FILE_NAME_RATES);
 			Stream<String> stream = Files.lines(file.toPath());
@@ -39,7 +40,7 @@ public class ReferenceDataLoader {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-
+		return currencyRate;
 	}
 	
 	
@@ -47,7 +48,8 @@ public class ReferenceDataLoader {
 	 * Method loads the Cross Via Matrix from file
 	 * @param crossMatrix
 	 */
-	public void populateCrossViaMatrix(HashMap<String, HashMap<String, String>> crossMatrix) {
+	public HashMap<String, HashMap<String, String>> populateCrossViaMatrix() {
+		HashMap<String, HashMap<String, String>> crossMatrix = new HashMap<String, HashMap<String, String>>();
 		try {
 			File file = ResourceUtils.getFile("classpath:" + FILE_NAME_MATRIX);
 			HashMap<String, String> mapFromFile = new HashMap<>();
@@ -70,25 +72,25 @@ public class ReferenceDataLoader {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-
+		return crossMatrix;
 	}
-	
 	
 	/**
 	 * Method to get the country specific decimal position
 	 * @param formatterMap
 	 */
-	
-	
-	public void getFormatterMap(HashMap<String, String> formatterMap) {
+	public HashMap<String, String> getFormatterMap() {
+		HashMap<String, String> formatterMap = new HashMap<String, String>();
 		try {
+
 			File file = ResourceUtils.getFile("classpath:" + FILE_NAME_FORMATTER);
 			Stream<String> stream = Files.lines(file.toPath());
 			stream.filter(line -> line.contains("="))
-					.forEach(line -> formatterMap.putIfAbsent(line.split("=")[0],line.split("=")[1]));
+					.forEach(line -> formatterMap.putIfAbsent(line.split("=")[0], line.split("=")[1].trim()));
+
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-
+		return formatterMap;
 	}
 }
