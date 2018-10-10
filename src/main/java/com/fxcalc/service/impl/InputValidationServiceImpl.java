@@ -31,7 +31,6 @@ public class InputValidationServiceImpl implements InputValidationService {
 	public boolean validateInput(String inputCommand, ConversionRequest convRequest) {
 
 		boolean isValid = true;
-		// AUD 100.00 in USD
 		try {
 
 			String[] splitedCommand = inputCommand.split(" ");

@@ -1,10 +1,18 @@
 package com.fxcalc.service.impl;
 
 import java.util.HashMap;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import com.fxcalc.helper.ReferenceDataLoader;
+
+import com.fxcalc.command.ConversionCommand;
+import com.fxcalc.command.CurrencyCommand;
+import com.fxcalc.command.CurrencyConvertor;
+import com.fxcalc.command.DirectFeedCommand;
+import com.fxcalc.command.InversionCommand;
+import com.fxcalc.command.UnityCommand;
 import com.fxcalc.model.ConversionRequest;
+import com.fxcalc.model.CrossViaMatrix;
 import com.fxcalc.service.CurrencyConversionService;
 
 /**
@@ -18,87 +26,62 @@ import com.fxcalc.service.CurrencyConversionService;
 public class CurrencyConversionServiceImpl implements CurrencyConversionService {
 
 	HashMap<String, HashMap<String, String>> crossMatrix;
-	HashMap<String, String> currencyRates;
-	HashMap<String, String> formatterMap;
+	HashMap<String, String> ratesMap;
 
 	@Autowired
-	ReferenceDataLoader referenceDataLoader;
-
+	CurrencyConvertor currencyConv;
+	
 	/**
 	 * Method to process the input request
 	 */
-
 	@Override
 	public void processRequest(ConversionRequest convRequest) {
 
-		crossMatrix = referenceDataLoader.populateCrossViaMatrix();
-		currencyRates=referenceDataLoader.populateCurrencyRate();
-		formatterMap=referenceDataLoader.getFormatterMap();
-		lookupCrossMatrix(crossMatrix, convRequest);
+		currencyConv = new CurrencyConvertor();
+		ConversionCommand directCommand = new DirectFeedCommand(convRequest);
+		ConversionCommand unityCommand = new UnityCommand(convRequest);
+		ConversionCommand inversionCommand = new InversionCommand(convRequest);
+		ConversionCommand currencyCommand = new CurrencyCommand(convRequest);
+
+		String crossMatrixValue = lookupCrossMatrix(convRequest);
+
+		// if Direct Feed
+		if (crossMatrixValue.equalsIgnoreCase("D")) {
+			currencyConv.setCommand(directCommand);
+			directCommand.execute();
+		}
+		// If unity
+		else if (crossMatrixValue.equalsIgnoreCase("1:1")) {
+			currencyConv.setCommand(unityCommand);
+			unityCommand.execute();
+
+		}
+		// If Inversion
+		else if (crossMatrixValue.equalsIgnoreCase("INV")) {
+			currencyConv.setCommand(inversionCommand);
+			inversionCommand.execute();
+		}
+		// If Currency
+		else {
+			convRequest.setCrossCurrency(crossMatrixValue);
+			currencyConv.setCommand(inversionCommand);
+			currencyCommand.execute();
+			processRequest(convRequest);
+		}
 	}
 
 	/**
-	 * Method to lookup the Cross Via Matrix and perform the conversion
+	 * Method to lookup Cross via Matrix
 	 * 
-	 * @param crossMatrix
 	 * @param convRequest
+	 * @return
 	 */
+	public String lookupCrossMatrix(ConversionRequest convRequest) {
 
-	public void lookupCrossMatrix(HashMap<String, HashMap<String, String>> crossMatrix, ConversionRequest convRequest) {
-		String convertedAmount = "";
-		if (!convRequest.getFromCurrency().isEmpty()) {
-			HashMap<String, String> map = crossMatrix.get(convRequest.getFromCurrency());
-			String value = map.get(convRequest.getToCurrency());
-			
-			// if Direct Feed
-			if (value.equalsIgnoreCase("D")) {
-				String strRate = currencyRates.get(convRequest.getFromCurrency().concat(convRequest.getToCurrency()));
-				Double rate = Double.parseDouble(strRate);
-				convertedAmount = String.format("%."+formatterMap.get(convRequest.getToCurrency())+"f %n",
-						rate * convRequest.getAmount());
-				System.out.println("\n Conversion Result: " + convertedAmount);
-			
-			//If unity
-			} else if (value.equalsIgnoreCase("1:1")) {
-				convertedAmount = String.format("%."+formatterMap.get(convRequest.getToCurrency())+"f %n",
-						convRequest.getAmount());
-				System.out.println("\n Conversion Result: " + convertedAmount);
-			
-			//If Inversion
-			} else if (value.equalsIgnoreCase("INV")) {
-				String strRate = currencyRates.get(convRequest.getToCurrency().concat(convRequest.getFromCurrency()));
-				Double rate = 1 / Double.parseDouble(strRate);
-				convertedAmount = String.format("%."+formatterMap.get(convRequest.getToCurrency())+"f %n",
-						rate * convRequest.getAmount());
-				System.out.println("\n Conversion Result: " + convertedAmount);
-			
-			//If Currency
-			} else {
-				String newvalue = map.get(value);
-				if (newvalue.equalsIgnoreCase("D")) {
-					String strRate = currencyRates.get(convRequest.getFromCurrency().concat(value));
-					Double rate = Double.parseDouble(strRate);
-					Double newAmount = rate * convRequest.getAmount();
-					convRequest.setAmount(newAmount);
-					convRequest.setFromCurrency(value);
-					lookupCrossMatrix(crossMatrix, convRequest);
-				} else if (newvalue.equalsIgnoreCase("1:1")) {
-					convRequest.setFromCurrency(value);
-					lookupCrossMatrix(crossMatrix, convRequest);
-				} else if (newvalue.equalsIgnoreCase("INV")) {
-					String strRate = currencyRates.get(value.concat(convRequest.getFromCurrency()));
-					Double rate = 1 / Double.parseDouble(strRate);
-					Double newAmount = rate * convRequest.getAmount();
-					convRequest.setAmount(newAmount);
-					convRequest.setFromCurrency(value);
-					lookupCrossMatrix(crossMatrix, convRequest);
-				} else {
-					convRequest.setFromCurrency(newvalue);
-					lookupCrossMatrix(crossMatrix, convRequest);
-				}
-
-			}
-		}
-
+		crossMatrix = CrossViaMatrix.getInstance().getMatrixMap();
+		HashMap<String, String> map = crossMatrix.get(convRequest.getFromCurrency());
+		String value = map.get(convRequest.getToCurrency());
+		return value;
 	}
+
 }

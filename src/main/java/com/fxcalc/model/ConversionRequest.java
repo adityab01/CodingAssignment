@@ -20,8 +20,18 @@ public class ConversionRequest {
 	private String toCurrency;
 	
 	private Double amount;
+	
+	private String crossCurrency;
 
 	
+	public String getCrossCurrency() {
+		return crossCurrency;
+	}
+
+	public void setCrossCurrency(String crossCurrency) {
+		this.crossCurrency = crossCurrency;
+	}
+
 	public String getFromCurrency() {
 		return fromCurrency;
 	}
